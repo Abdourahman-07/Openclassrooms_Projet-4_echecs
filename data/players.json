@@ -1,0 +1,26 @@
+{
+  "AB12345": {
+    "last_name": "Laloue",
+    "first_name": "Abdourahman",
+    "birth_date": "2007-01-04",
+    "national_id": "AB12345"
+  },
+  "AB12385": {
+    "last_name": "Dubois",
+    "first_name": "Jean",
+    "birth_date": "1987-02-14",
+    "national_id": "AB12458"
+  },
+  "ZE45612": {
+    "last_name": "Michel",
+    "first_name": "Pierre",
+    "birth_date": "1987--01-24",
+    "national_id": "ZE45612"
+  },
+  "GU45678": {
+    "last_name": "Paulert",
+    "first_name": "Paul",
+    "birth_date": "2014-02-14",
+    "national_id": "GU45678"
+  }
+}
