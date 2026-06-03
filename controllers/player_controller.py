@@ -1,5 +1,6 @@
 from views.menu_view import MenuView
 from utils.storage import Storage
+from utils.validators import ask_date  # ← AJOUT
 
 
 class PlayerController:
@@ -8,7 +9,6 @@ class PlayerController:
     def __init__(self):
         """Initialise le contrôleur des joueurs."""
         self.view = MenuView()
-        # Charge tous les joueurs depuis le fichier JSON au démarrage
         self.players = Storage.load_players()
 
     def run(self):
@@ -22,7 +22,6 @@ class PlayerController:
             elif choice == '2':
                 self.list_players()
             elif choice == '3':
-                # Sortie de la boucle pour retourner au menu principal
                 break
             else:
                 self.view.display_error("Choix invalide")
@@ -32,19 +31,18 @@ class PlayerController:
         self.view.display_message("Ajout d'un nouveau joueur")
         last_name = self.view.get_input("Nom de famille: ")
         first_name = self.view.get_input("Prénom: ")
-        birth_date = self.view.get_input("Date de naissance (YYYY-MM-DD): ")
+        # birth_date = self.view.get_input("Date de naissance (YYYY-MM-DD): ")
+        # ↑ ANCIEN CODE, À REMPLACER PAR :
+        birth_date = ask_date(self.view, "Date de naissance (YYYY-MM-DD): ")
         national_id = self.view.get_input("Identifiant national : ")
 
-        # Vérifie que le joueur n'existe pas déjà
         if national_id in self.players:
             self.view.display_error("Ce joueur existe déjà")
             return
 
         from models.player import Player
         player = Player(last_name, first_name, birth_date, national_id)
-        # Ajoute le joueur au dictionnaire avec son ID comme clé
         self.players[national_id] = player
-        # Sauvegarde immédiatement dans le fichier JSON
         Storage.save_players(self.players)
         self.view.display_success(f"Joueur {player} ajouté")
 
@@ -54,9 +52,8 @@ class PlayerController:
             self.view.display_message("Aucun joueur enregistré")
             return
 
-        # Trie par nom de famille, puis par prénom
         sorted_players = sorted(
             self.players.values(),
-            key=lambda player: (player.last_name, player.first_name)
+            key=lambda player: (player.last_name, player.first_name),
         )
         self.view.display_players(sorted_players)

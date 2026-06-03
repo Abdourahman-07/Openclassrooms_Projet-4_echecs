@@ -1,0 +1,11 @@
+{
+  "name": "Coupe nationale",
+  "location": "France",
+  "start_date": "2026-12-01",
+  "end_date": "2026-12-03",
+  "number_of_rounds": 4,
+  "current_round": 0,
+  "rounds": [],
+  "players": [],
+  "description": ""
+}

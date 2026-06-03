@@ -3,6 +3,7 @@ from utils.storage import Storage
 from utils.pairing import PairingEngine
 from models.tournament import Tournament
 from models.round import Round
+from utils.validators import ask_date
 
 
 class TournamentController:
@@ -45,8 +46,8 @@ class TournamentController:
             return
 
         location = self.view.get_input("Lieu: ")
-        start_date = self.view.get_input("Date de début (YYYY-MM-DD): ")
-        end_date = self.view.get_input("Date de fin (YYYY-MM-DD): ")
+        start_date = ask_date(self.view, "Date de début (YYYY-MM-DD): ")
+        end_date = ask_date(self.view, "Date de fin (YYYY-MM-DD): ")
         rounds = self.view.get_input("Nombre de tours (défaut 4): ")
         if rounds:
             rounds = int(rounds)
