@@ -142,6 +142,10 @@ class TournamentController:
 
         self.view.display_success(f"{round_name} démarré")
         self.view.display_matches(matches, self.players)
+        self.view.display_message(
+            "Vous allez maintenant saisir les résultats de ce tour."
+        )
+        self.enter_results()
 
     def enter_results(self):
         """Saisit les résultats d'un tour."""

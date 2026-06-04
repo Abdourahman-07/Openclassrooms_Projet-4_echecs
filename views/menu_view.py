@@ -101,20 +101,32 @@ class MenuView:
         print("=" * 80)
 
     def display_matches(self, matches, players_dict):
-        """Affiche une liste de matchs."""
+        """Affiche une liste de matchs avec le résultat explicite."""
         print("\n" + "-" * 80)
         for i, match in enumerate(matches, 1):
             p1 = players_dict.get(match.player1_id, match.player1_id)
             p2 = players_dict.get(match.player2_id, match.player2_id)
-            if match.score1 is not None:
-                s1 = match.score1
+
+            s1 = match.score1
+            s2 = match.score2
+
+            # Texte de score (avec '-' si pas encore saisi)
+            score1_txt = s1 if s1 is not None else '-'
+            score2_txt = s2 if s2 is not None else '-'
+
+            # Détermination du résultat explicite
+            if s1 is None or s2 is None:
+                result_txt = "résultat non saisi"
+            elif s1 > s2:
+                result_txt = f"{p1} gagne"
+            elif s2 > s1:
+                result_txt = f"{p2} gagne"
             else:
-                s1 = '-'
-            if match.score2 is not None:
-                s2 = match.score2
-            else:
-                s2 = '-'
-            print(f"Match {i}: {p1} ({s1}) vs {p2} ({s2})")
+                result_txt = "match nul"
+
+            print(
+                f"Match {i}: {p1} ({score1_txt}) vs {p2} ({score2_txt})  ->  {result_txt}"
+            )
         print("-" * 80)
 
     def display_rounds(self, tournament, players_dict):

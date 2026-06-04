@@ -4,8 +4,46 @@
   "start_date": "2026-12-01",
   "end_date": "2026-12-03",
   "number_of_rounds": 4,
-  "current_round": 0,
-  "rounds": [],
-  "players": [],
+  "current_round": 2,
+  "rounds": [
+    {
+      "name": "Round 1",
+      "matches": [
+        [
+          [
+            "AB4566",
+            0.5
+          ],
+          [
+            "AB1536",
+            0.5
+          ]
+        ]
+      ],
+      "start_datetime": "2026-06-04T12:56:28.782452",
+      "end_datetime": "2026-06-04T12:56:57.351084"
+    },
+    {
+      "name": "Round 2",
+      "matches": [
+        [
+          [
+            "AB1536",
+            null
+          ],
+          [
+            "AB4566",
+            null
+          ]
+        ]
+      ],
+      "start_datetime": "2026-06-04T12:57:30.038938",
+      "end_datetime": null
+    }
+  ],
+  "players": [
+    "AB4566",
+    "AB1536"
+  ],
   "description": ""
 }
