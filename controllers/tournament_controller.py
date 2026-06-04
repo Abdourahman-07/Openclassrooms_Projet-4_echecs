@@ -7,16 +7,30 @@ from utils.validators import ask_date
 
 
 class TournamentController:
-    """Contrôleur gérant les actions liées aux tournois."""
+    """Contrôleur gérant les actions liées aux tournois.
+
+    Il permet de créer des tournois, d'y inscrire des joueurs,
+    de lancer les tours, de saisir les résultats, et d'afficher la liste
+    des tournois existants.
+    """
 
     def __init__(self):
-        """Initialise le contrôleur des tournois."""
+        """Initialise le contrôleur des tournois.
+
+        Charge en mémoire les joueurs et tournois depuis le stockage JSON.
+        """
         self.view = MenuView()
+        # Dictionnaire {national_id: Player}
         self.players = Storage.load_players()
+        # Dictionnaire {tournament_name: Tournament}
         self.tournaments = Storage.load_tournaments()
 
     def run(self):
-        """Boucle principale du menu tournois."""
+        """Boucle principale du menu tournois.
+
+        Affiche le menu des tournois et redirige vers les actions
+        choisies par l'utilisateur tant qu'il ne revient pas au menu principal.
+        """
         while True:
             self.view.display_tournament_menu()
             choice = self.view.get_input("Votre choix: ")
@@ -32,20 +46,23 @@ class TournamentController:
             elif choice == '5':
                 self.list_tournaments()
             elif choice == '6':
+                # Retour au menu principal
                 break
             else:
                 self.view.display_error("Choix invalide")
 
     def create_tournament(self):
-        """Crée un nouveau tournoi."""
+        """Crée un nouveau tournoi et le sauvegarde."""
         self.view.display_message("Création d'un nouveau tournoi")
         name = self.view.get_input("Nom du tournoi: ")
 
+        # Un tournoi porte un nom unique
         if name in self.tournaments:
             self.view.display_error("Un tournoi avec ce nom existe déjà")
             return
 
         location = self.view.get_input("Lieu: ")
+        # Demande et valide les dates au format YYYY-MM-DD
         start_date = ask_date(self.view, "Date de début (YYYY-MM-DD): ")
         end_date = ask_date(self.view, "Date de fin (YYYY-MM-DD): ")
         rounds = self.view.get_input("Nombre de tours (défaut 4): ")
@@ -55,17 +72,26 @@ class TournamentController:
             rounds = 4
         description = self.view.get_input("Description (optionnel): ")
 
-        tournament = Tournament(name, location, start_date, end_date, rounds, description=description)
+        tournament = Tournament(
+            name,
+            location,
+            start_date,
+            end_date,
+            rounds,
+            description=description,
+        )
+        # Enregistre le tournoi en mémoire et sur disque
         self.tournaments[name] = tournament
         Storage.save_tournament(tournament)
         self.view.display_success(f"Tournoi '{name}' créé")
 
     def register_players(self):
-        """Inscrit des joueurs à un tournoi."""
+        """Inscrit des joueurs à un tournoi sélectionné."""
         if not self.tournaments:
             self.view.display_error("Aucun tournoi disponible")
             return
 
+        # Affiche la liste pour aider au choix
         self.list_tournaments()
         tournament_name = self.view.get_input("Nom du tournoi: ")
 
@@ -75,10 +101,12 @@ class TournamentController:
 
         tournament = self.tournaments[tournament_name]
 
+        # On ne peut plus ajouter de joueurs si le tournoi a déjà commencé
         if tournament.current_round > 0:
             self.view.display_error("Impossible d'ajouter des joueurs, le tournoi a déjà commencé")
             return
 
+        # Boucle d'inscription des joueurs
         while True:
             player_id = self.view.get_input("ID national du joueur (ou 'q' pour terminer): ")
             if player_id.lower() == 'q':
@@ -97,7 +125,7 @@ class TournamentController:
             self.view.display_success(f"Joueur {self.players[player_id]} inscrit")
 
     def start_new_round(self):
-        """Démarre un nouveau tour."""
+        """Démarre un nouveau tour pour un tournoi sélectionné."""
         if not self.tournaments:
             self.view.display_error("Aucun tournoi disponible")
             return
@@ -111,6 +139,7 @@ class TournamentController:
 
         tournament = self.tournaments[tournament_name]
 
+        # Vérifie que le nombre de tours max n'est pas dépassé
         if tournament.current_round >= tournament.number_of_rounds:
             self.view.display_error("Le tournoi est terminé")
             return
@@ -123,6 +152,7 @@ class TournamentController:
             self.view.display_error("Le nombre de joueurs doit être pair")
             return
 
+        # Empêche de démarrer un nouveau tour si le précédent n'est pas clôturé
         if tournament.rounds and not tournament.rounds[-1].end_datetime:
             self.view.display_error("Le tour actuel n'est pas terminé")
             return
@@ -130,11 +160,13 @@ class TournamentController:
         tournament.current_round += 1
         round_name = f"Round {tournament.current_round}"
 
+        # Premier tour : appariements aléatoires, tours suivants : système suisse
         if tournament.current_round == 1:
             matches = PairingEngine.generate_first_round_pairs(tournament.players)
         else:
             matches = PairingEngine.generate_next_round_pairs(tournament)
-        # /////////////
+
+        # Création et démarrage du tour
         new_round = Round(round_name, matches)
         new_round.start()
         tournament.rounds.append(new_round)
@@ -142,13 +174,12 @@ class TournamentController:
 
         self.view.display_success(f"{round_name} démarré")
         self.view.display_matches(matches, self.players)
-        self.view.display_message(
-            "Vous allez maintenant saisir les résultats de ce tour."
-        )
+        self.view.display_message("Vous allez maintenant saisir les résultats de ce tour.")
+        # Enchaîne directement sur la saisie des résultats
         self.enter_results()
 
     def enter_results(self):
-        """Saisit les résultats d'un tour."""
+        """Saisit les résultats du dernier tour d'un tournoi."""
         if not self.tournaments:
             self.view.display_error("Aucun tournoi disponible")
             return
@@ -168,6 +199,7 @@ class TournamentController:
 
         current_round = tournament.rounds[-1]
 
+        # On ne peut pas modifier un tour déjà clôturé
         if current_round.end_datetime:
             self.view.display_error("Ce tour est déjà terminé")
             return
@@ -175,11 +207,14 @@ class TournamentController:
         self.view.display_message(f"Saisie des résultats pour {current_round.name}")
         self.view.display_matches(current_round.matches, self.players)
 
+        # Saisie du résultat pour chaque match du tour
         for i, match in enumerate(current_round.matches, 1):
             p1 = self.players[match.player1_id]
             p2 = self.players[match.player2_id]
             print(f"\nMatch {i}: {p1} vs {p2}")
-            result = self.view.get_input("Résultat (1=joueur1 gagne, 2=joueur2 gagne, 0=nul): ")
+            result = self.view.get_input(
+                "Résultat (1=joueur1 gagne, 2=joueur2 gagne, 0=nul): "
+            )
 
             if result == '1':
                 match.set_result(1)
@@ -191,15 +226,19 @@ class TournamentController:
                 self.view.display_error("Résultat invalide, match nul par défaut")
                 match.set_result(0)
 
+        # Marque la fin du tour et sauvegarde l'état du tournoi
         current_round.end()
         Storage.save_tournament(tournament)
         self.view.display_success(f"{current_round.name} terminé")
 
     def list_tournaments(self):
-        """Affiche la liste des tournois."""
+        """Affiche la liste des tournois triés par nom."""
         if not self.tournaments:
             self.view.display_message("Aucun tournoi enregistré")
             return
 
-        sorted_tournaments = sorted(self.tournaments.values(), key=lambda tournament: tournament.name)
+        sorted_tournaments = sorted(
+            self.tournaments.values(),
+            key=lambda tournament: tournament.name,
+        )
         self.view.display_tournaments(sorted_tournaments)
