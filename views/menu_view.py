@@ -1,3 +1,6 @@
+from utils.pairing import PairingEngine
+
+
 class MenuView:
     """Classe gérant l'affichage des menus et la saisie utilisateur.
 
@@ -177,8 +180,10 @@ class MenuView:
         print("\nJoueurs inscrits:")
         for pid in tournament.players:
             if pid in players_dict:
-                # __str__ de Player est utilisé pour un affichage lisible
-                print(f"  - {players_dict[pid]}")
+                player = players_dict[pid]
+                # Calcul du score total du joueur dans ce tournoi
+                score = PairingEngine.get_player_score(tournament, pid)
+                print(f"  - {player} | Points: {score}")
         print("=" * 80)
 
     def display_matches(self, matches, players_dict):
